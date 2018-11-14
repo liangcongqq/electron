@@ -76,3 +76,4 @@ verbose_generate_breakpad_symbols.patch
 fix_zoom_display.patch
 chrome_process_finder.patch
 customizable_app_indicator_id_prefix.patch
+paste_and_match_style.patch

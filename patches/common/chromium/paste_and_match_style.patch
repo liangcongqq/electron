@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Heilig Benedek <benecene@gmail.com>
+Date: Thu, 15 Nov 2018 00:14:31 +0100
+Subject: Treat "Paste and Match Style" similar to Copy/Cut
+
+The current upstream code marks the keyboard event as not handled if the
+JS code calls `event.preventDefault()`. This is in contrast with Copy
+and Cut, which are always marked as handled. This causes problems when
+the JS handler does something, and there is a global accelerator for the
+same key that also does something, effectively causing both things to
+happen when only one should (that's why `preventDefault` was called).
+This is most likely a bug upstream, and thus the patch should be
+eventually upstreamed too.
+
+diff --git a/third_party/blink/renderer/core/editing/commands/clipboard_commands.cc b/third_party/blink/renderer/core/editing/commands/clipboard_commands.cc
+index 17f724a124fa4cba0ab87463f66fa40a56602138..bea5d63203892333fce36c0a275dd3e81a3418e4 100644
+--- a/third_party/blink/renderer/core/editing/commands/clipboard_commands.cc
++++ b/third_party/blink/renderer/core/editing/commands/clipboard_commands.cc
+@@ -462,9 +462,9 @@ bool ClipboardCommands::ExecutePasteAndMatchStyle(LocalFrame& frame,
+                                                   EditorCommandSource source,
+                                                   const String&) {
+   if (!DispatchPasteEvent(frame, PasteMode::kPlainTextOnly, source))
+-    return false;
++    return true;
+   if (!frame.GetEditor().CanPaste())
+-    return false;
++    return true;
+ 
+   // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+   // needs to be audited.  See http://crbug.com/590369 for more details.
+@@ -474,7 +474,7 @@ bool ClipboardCommands::ExecutePasteAndMatchStyle(LocalFrame& frame,
+ 
+   if (source == EditorCommandSource::kMenuOrKeyBinding &&
+       !frame.Selection().SelectionHasFocus())
+-    return false;
++    return true;
+ 
+   PasteAsPlainTextFromClipboard(frame, source);
+   return true;

@@ -6,6 +6,7 @@
 
 #include "atom/common/native_mate_converters/image_converter.h"
 #include "atom/common/native_mate_converters/string16_converter.h"
+#include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -65,8 +66,9 @@ void Clipboard::WriteBuffer(const std::string& format,
   }
 
   ui::ScopedClipboardWriter writer(GetClipboardType(args));
-  writer.WriteData(node::Buffer::Data(buffer), node::Buffer::Length(buffer),
-                   ui::Clipboard::GetFormatType(format));
+  writer.WritePickledData(
+      base::Pickle(node::Buffer::Data(buffer), node::Buffer::Length(buffer)),
+      ui::Clipboard::GetFormatType(format));
 }
 
 void Clipboard::Write(const mate::Dictionary& data, mate::Arguments* args) {
